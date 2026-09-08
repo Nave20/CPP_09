@@ -1,4 +1,4 @@
-NAME = RPN
+NAME = PmergeMe
 CC = c++
 CFLAGS = -std=c++98 -Wall -Wextra -Werror -g3
 OBJ_DIR = objs/
