@@ -5,8 +5,8 @@ OBJ_DIR = objs/
 SRC_DIR = .
 INC_DIR = include
 
-SRC_FILES = src/main.cpp src/RPN.cpp
-INC_FILES = inc/RPN.hpp
+SRC_FILES = src/main.cpp src/PmergeMe.cpp
+INC_FILES = inc/PmergeMe.hpp
 
 OBJS = $(addprefix $(OBJ_DIR),$(SRC_FILES:.cpp=.o))
 DEPS = $(OBJS:.o=.d)

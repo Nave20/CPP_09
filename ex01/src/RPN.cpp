@@ -12,10 +12,6 @@
 
 #include "../inc/RPN.hpp"
 
-RPN::RPN() {}
-
-RPN::~RPN() {}
-
 bool RPN::switchOpp(std::string token)
 {
 	if (this->size() < 2)

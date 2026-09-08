@@ -73,7 +73,5 @@
 class RPN : public std::stack<int>
 {
 	public:
-		RPN();
-		~RPN();
 		bool	switchOpp(std::string token);
 };

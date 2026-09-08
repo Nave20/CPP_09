@@ -23,6 +23,7 @@ int main(int ac, char** av)
 		return 1;
 	if (av[1][0] == 0)
 		return 1;
+
 	std::string token;
 	std::stringstream ss(av[1]);
 	RPN stack;
