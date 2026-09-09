@@ -67,11 +67,23 @@
 #define BG_BRIGHT_MAGENTA "\033[105m"
 #define BG_BRIGHT_CYAN    "\033[106m"
 #define BG_BRIGHT_WHITE   "\033[107m"
+#include <deque>
+#include <string>
+#include <vector>
 
 class PmergeMe
 {
 	public:
 		PmergeMe();
 		~PmergeMe();
-		
+
+		bool parseInput(std::string input);
+		void printContainer(bool b);
+
+		std::vector<int> getVector() {return (_vector);};
+		std::deque<int> getDeque() {return (_deque);};
+
+	private:
+		std::vector<int> _vector;
+		std::deque<int> _deque;
 };
