@@ -71,6 +71,12 @@
 #include <string>
 #include <vector>
 
+struct Pair
+{
+	int small;
+	int large;
+};
+
 class PmergeMe
 {
 	public:
@@ -82,8 +88,18 @@ class PmergeMe
 
 		std::vector<int> getVector() {return (_vector);};
 		std::deque<int> getDeque() {return (_deque);};
+		template <typename Container>
+		std::vector<Pair> makePairsV(const Container& container);
+		// void printPairs(std::vector<Pair> pairs);
+
+		void solve();
+		template <typename Container>
+		void createPairs(Container &container, int size);
 
 	private:
 		std::vector<int> _vector;
 		std::deque<int> _deque;
+
+		int		_standAlone;
+		bool	_odd;
 };

@@ -39,6 +39,8 @@ int main(int ac, char **av)
 		}
 		i++;
 	}
-	data.printContainer(0);
 	data.printContainer(1);
+	data.solve();
+	// data.printContainer(1);
+	// data.printContainer(1);
 }
