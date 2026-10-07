@@ -17,7 +17,7 @@
 #include <climits>
 #include <iostream>
 
-PmergeMe::PmergeMe() : _standAlone(0), _odd(false) {}
+PmergeMe::PmergeMe() : _standAlone(0), _odd(false), _recLvl(0) {}
 
 PmergeMe::~PmergeMe() {}
 
@@ -53,39 +53,8 @@ void PmergeMe::printContainer(bool b)
 			std::cout << *it << " ";
 		std::cout << std::endl;
 	}
+	std::cout << "reclvl :" << _recLvl << std::endl;
 }
-
-// void PmergeMe::printPairs(std::vector<Pair> pairs)
-// {
-// 	for (std::vector<Pair>::iterator it = pairs.begin();
-// 		 it != pairs.end(); ++it)
-// 	{
-// 		std::cout << "("
-// 				  << YELLOW << it->small << RESET << ", "
-// 				  << RED << it->large << RESET << ") ";
-// 	}
-// 	if (this->_odd)
-// 	{
-// 		std::cout << "("<< BLUE << this->_standAlone << RESET <<")"<< std::endl;
-// 	}
-// 	std::cout << std::endl;
-// }
-//
-// bool comparePairs(const Pair& a, const Pair& b)
-// {
-// 	return a.large < b.large;
-// }
-
-// template <typename Container>
-// Container buildMainChain(const std::vector<Pair>& pairs)
-// {
-// 	Container mainChain;
-//
-// 	mainChain.push_back(pairs[0].small);
-// 	for (size_t i = 0; i < pairs.size(); ++i)
-// 		mainChain.push_back(pairs[i].large);
-// 	return mainChain;
-// }
 
 template <typename Container>
 void swapGroups(Container& container,
@@ -98,92 +67,119 @@ void swapGroups(Container& container,
 }
 
 template <typename Container>
+void insertGroup(Container& from,
+				 Container& to,
+				 size_t GroupNBRfrom,
+				 size_t GroupNBRto,
+				 size_t groupSize)
+{
+	size_t fromIndex = GroupNBRfrom * groupSize;
+	size_t toIndex   = GroupNBRto * groupSize;
+
+	to.insert(
+		to.begin() + toIndex,
+		from.begin() + fromIndex,
+		from.begin() + fromIndex + groupSize
+	);
+}
+
+template <typename Container>
 void PmergeMe::createPairs(Container& container, int size)
 {
 	if (size <= 0)
 		return;
 
 	const size_t groupSize = static_cast<size_t>(size);
-
-	// Il faut au moins deux groupes complets pour pouvoir les comparer.
 	if (container.size() < groupSize * 2)
 		return;
 
-	/*
-	 * On parcourt les groupes deux par deux.
-	 *
-	 * Exemple avec size = 2 :
-	 *
-	 * [4 1] [3 2] [5 6] [8 7]
-	 *    ^      ^
-	 *
-	 * On compare les deux groupes en regardant leur dernier élément.
-	 */
+	this->_recLvl += 1;
+
 	for (size_t i = 0;
 		 i + groupSize * 2 <= container.size();
 		 i += groupSize * 2)
 	{
 		size_t first = i / groupSize;
 		size_t second = first + 1;
-
-		// Le plus grand élément du groupe est à sa fin,
-		// puisque les niveaux précédents ont déjà ordonné les groupes.
 		if (container[i + groupSize - 1]
 			> container[i + groupSize * 2 - 1])
 		{
 			swapGroups(container, first, second, groupSize);
 		}
 	}
-
-	// Niveau suivant : les groupes font maintenant 2 * size.
 	createPairs(container, size * 2);
+}
+
+template<typename Container>
+void PmergeMe::stragglerHandling(Container &container)
+{
+	if (container.size() % 2 != 0)
+	{
+		size_t i = 0;
+		for (; i < container.size(); i++);
+		this->_standAlone = container[i];
+		this->_odd = true;
+		container.erase(container.begin() + i - 1, container.end());
+	}
+}
+
+template<typename Container>
+void PmergeMe::reversePairing(Container &container, int recursionDepth)
+{
+	if (recursionDepth == 0)
+		return;
+	size_t box_size = 1 << recursionDepth;
+	size_t box_number = container.size() / box_size;
+							std::cout
+							<< BLUE << "box size :" << box_size << std::endl
+							<< YELLOW << "box number : " << box_number << RESET << std::endl;
+	Container MainChain;
+	int inserted = 0;
+	for (size_t i = 0; i < box_number; i++)
+	{
+		if (i == 0)
+		{
+			insertGroup(container, MainChain, i, inserted, box_size);
+			inserted++;
+		}
+		else if (i % 2 == 1)
+		{
+			insertGroup(container, MainChain, i, inserted, box_size);
+			inserted++;
+		}
+	}
+	int JacobSthal = 3;
+	int PrevRank = 1;
+	int Index = 3;
+	while (inserted < box_number)
+	{
+		if (Index == PrevRank)
+		{
+			int a = JacobSthal;
+			JacobSthal = JacobSthal + PrevRank * 2;
+			PrevRank = a;
+			Index = JacobSthal;
+		}
+		int UpperBound = box_size * (Index + 3);
+		if (UpperBound > container.size())
+			UpperBound = -1;
+		else
+			UpperBound = container[UpperBound];
+
+		Index--;
+		inserted++;
+	}
+
+	this->_vector = MainChain;
 }
 
 void PmergeMe::solve()
 {
+	stragglerHandling(this->_vector);
+	// printContainer(1);
 	createPairs(this->_vector, 1);
 	printContainer(1);
-	// swapGroups(this->_vector, 0, 1, 1);
+	reversePairing(this->_vector, this->_recLvl - 2);
+	printContainer(1);
 	// printContainer(1);
-}
-
-template <typename Container>
-std::vector<Pair> PmergeMe::makePairsV(const Container& container)
-{
-	std::vector<Pair> pairs;
-
-	typename Container::const_iterator it = container.begin();
-
-	while (it != container.end())
-	{
-		Pair p;
-
-		int first = *it;
-		++it;
-
-		if (it == container.end())
-		{
-			this->_standAlone = first;
-			this->_odd = true;
-			break;
-		}
-
-		int second = *it;
-		++it;
-
-		if (first < second)
-		{
-			p.small = first;
-			p.large = second;
-		}
-		else
-		{
-			p.small = second;
-			p.large = first;
-		}
-
-		pairs.push_back(p);
-	}
-
-	return pairs;
 }

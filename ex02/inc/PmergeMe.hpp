@@ -95,6 +95,12 @@ class PmergeMe
 		void solve();
 		template <typename Container>
 		void createPairs(Container &container, int size);
+		template <typename Container>
+		void stragglerHandling(Container &container);
+		// template <typename Container>
+		// void mainChain(Container &container);
+		template <typename Container>
+		void reversePairing(Container &container, int);
 
 	private:
 		std::vector<int> _vector;
@@ -102,4 +108,5 @@ class PmergeMe
 
 		int		_standAlone;
 		bool	_odd;
+		int		_recLvl;
 };
