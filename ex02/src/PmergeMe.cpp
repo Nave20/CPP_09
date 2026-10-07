@@ -134,7 +134,7 @@ void PmergeMe::reversePairing(Container &container, int recursionDepth)
 							<< BLUE << "box size :" << box_size << std::endl
 							<< YELLOW << "box number : " << box_number << RESET << std::endl;
 	Container MainChain;
-	int inserted = 0;
+	size_t inserted = 0;
 	for (size_t i = 0; i < box_number; i++)
 	{
 		if (i == 0)
@@ -159,14 +159,24 @@ void PmergeMe::reversePairing(Container &container, int recursionDepth)
 			JacobSthal = JacobSthal + PrevRank * 2;
 			PrevRank = a;
 			Index = JacobSthal;
-		}
-		int UpperBound = box_size * (Index + 3);
-		if (UpperBound > container.size())
-			UpperBound = -1;
-		else
-			UpperBound = container[UpperBound];
+		} //PAS BON car l'indice decremente de 2, faire un tableau des grands uniquement ?
+		size_t numberChecked = box_size * (Index + 2) - 1;
+		numberChecked = container[numberChecked];
+		std::cout << MAGENTA << "Number checked : " << numberChecked << RESET << std::endl;
 
-		Index--;
+
+
+		// numberChecked = container[numberChecked];
+		// size_t UpperBound = box_size * (Index + 3);
+		// if (UpperBound > container.size())
+		// 	UpperBound = -1;
+		// else
+		// 	UpperBound = container[UpperBound];
+
+
+		// std::cout << GREEN << "UpperBound : " << UpperBound << RESET << std::endl;
+		// std::cout << CYAN << "Inserted : " << inserted << RESET << std::endl;
+		Index -= 2;
 		inserted++;
 	}
 
