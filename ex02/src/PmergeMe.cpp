@@ -106,15 +106,54 @@ void PmergeMe::stragglerHandling(Container &container)
 	}
 }
 
+// template <typename Container>
+// void insertGroup(Container& from,
+// 				Container& to,
+// 				size_t GroupNBRfrom,
+// 				size_t GroupNBRto,
+// 				size_t groupSize)
+// {
+// 	size_t fromIndex = GroupNBRfrom * groupSize;
+// 	size_t toIndex   = GroupNBRto * groupSize;
+//
+// 	to.insert(
+// 		to.begin() + toIndex,
+// 		from.begin() + fromIndex,
+// 		from.begin() + fromIndex + groupSize
+// 	);
+// }
+
 template <typename Container>
 void insertGroup(Container& from,
-				Container& to,
-				size_t GroupNBRfrom,
-				size_t GroupNBRto,
-				size_t groupSize)
+				 Container& to,
+				 size_t GroupNBRfrom,
+				 size_t GroupNBRto,
+				 size_t groupSize)
 {
 	size_t fromIndex = GroupNBRfrom * groupSize;
 	size_t toIndex   = GroupNBRto * groupSize;
+
+	std::cout << "insertGroup:"
+			  << " fromGroup=" << GroupNBRfrom
+			  << " toGroup=" << GroupNBRto
+			  << " fromIndex=" << fromIndex
+			  << " toIndex=" << toIndex
+			  << " groupSize=" << groupSize
+			  << " from.size=" << from.size()
+			  << " to.size=" << to.size()
+			  << std::endl;
+
+	if (fromIndex + groupSize > from.size())
+	{
+		std::cout << "ERREUR FROM" << std::endl;
+		return;
+	}
+
+	if (toIndex > to.size())
+	{
+		std::cout << "ERREUR TO" << std::endl;
+		return;
+	}
 
 	to.insert(
 		to.begin() + toIndex,
@@ -127,29 +166,30 @@ template<typename Container>
 Container extractBigNumbers(Container &container, size_t box_number, size_t box_size)
 {
 	Container bigNbr;
-	size_t j = 0;
-	for (size_t i = box_size - 1; i < box_number * box_size; i+= box_size)
+
+	for (size_t box = 0; box < box_number; ++box)
 	{
-		bigNbr.push_back(container[i]);
-		if (j == 0 || j % 2 == 1)
-			std::cout << RED << bigNbr[j] << " ";
-		else
-			std::cout << GREEN << bigNbr[j] << " ";
-		j++;
+		size_t index = box * box_size + (box_size - 1);
+
+		if (index >= container.size())
+			break;
+
+		bigNbr.push_back(container[index]);
 	}
-	std::cout << std::endl;
-	return (bigNbr);
+
+	return bigNbr;
 }
 
 template <typename Container>
 size_t binarySearch(const Container& container, int number, size_t maxIndex)
 {
 	size_t left = 0;
-	size_t right = maxIndex + 1;
+	size_t right = maxIndex;
 
 	while (left < right)
 	{
 		size_t middle = left + (right - left) / 2;
+
 		if (container[middle] < number)
 			left = middle + 1;
 		else
@@ -203,16 +243,35 @@ void PmergeMe::reversePairing(Container &container, int recursionDepth)
 			indexJacob = JacobSthal;
 		}
 		index					= (indexJacob - 1) * 2;
+
+		std::cout << "index = " << index
+													<< " bigNbr.size() = " << bigNbr.size()
+													<< std::endl;
+		size_t upperBound;
+		if (index + 1 >= bigNbr.size())
+		{
+			upperBound = bigNbr[index];
+			std::cout << "ERREUR : index hors limites" << std::endl;
+			// break;
+		}
+		else
+			upperBound = bigNbr[index + 1];
 		size_t numberChecked	= bigNbr[index];
-		size_t upperBound		= bigNbr[index + 1];
-		size_t maxIndex			= bigInserted.size();
+		size_t maxIndex;
+		if (bigInserted.empty())
+			maxIndex = 0;
+		else
+			maxIndex = bigInserted.size() - 1;
 		for (size_t i = 0; i < bigInserted.size(); i++)
 		{
 			if (bigInserted[i] == static_cast<int>(upperBound))
+			{
 				maxIndex = i;
+				break;
+			}
 		}
 		size_t insertion =  binarySearch(bigInserted, numberChecked, maxIndex);
-		insertGroup(container, bigInserted, index, insertion, box_size);
+		insertGroup(container, MainChain, index, insertion, box_size);
 
 					std::cout << MAGENTA << "insertion : " <<insertion << std::endl;
 					std::cout << MAGENTA << "Number checked : " << numberChecked << " " << std::endl;
@@ -221,8 +280,15 @@ void PmergeMe::reversePairing(Container &container, int recursionDepth)
 					std::cout << CYAN << index + 1 << RESET << std::endl;
 		indexJacob	-= 1;
 		inserted	++;
+		for (size_t i = 0; i < MainChain.size(); i++)
+		{
+			std::cout << RED << MainChain[i] << " ";
+			if (i % 4 == 3)
+				std::cout << " --- ";
+		}
+		std::cout << RESET << std::endl;
 	}
-
+	//AJOUTER LE RESTE DES UNUSED
 	this->_vector = MainChain;
 }
 
