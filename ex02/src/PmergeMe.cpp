@@ -67,23 +67,6 @@ void swapGroups(Container& container,
 }
 
 template <typename Container>
-void insertGroup(Container& from,
-				 Container& to,
-				 size_t GroupNBRfrom,
-				 size_t GroupNBRto,
-				 size_t groupSize)
-{
-	size_t fromIndex = GroupNBRfrom * groupSize;
-	size_t toIndex   = GroupNBRto * groupSize;
-
-	to.insert(
-		to.begin() + toIndex,
-		from.begin() + fromIndex,
-		from.begin() + fromIndex + groupSize
-	);
-}
-
-template <typename Container>
 void PmergeMe::createPairs(Container& container, int size)
 {
 	if (size <= 0)
@@ -123,6 +106,59 @@ void PmergeMe::stragglerHandling(Container &container)
 	}
 }
 
+template <typename Container>
+void insertGroup(Container& from,
+				Container& to,
+				size_t GroupNBRfrom,
+				size_t GroupNBRto,
+				size_t groupSize)
+{
+	size_t fromIndex = GroupNBRfrom * groupSize;
+	size_t toIndex   = GroupNBRto * groupSize;
+
+	to.insert(
+		to.begin() + toIndex,
+		from.begin() + fromIndex,
+		from.begin() + fromIndex + groupSize
+	);
+}
+
+template<typename Container>
+Container extractBigNumbers(Container &container, size_t box_number, size_t box_size)
+{
+	Container bigNbr;
+	size_t j = 0;
+	for (size_t i = box_size - 1; i < box_number * box_size; i+= box_size)
+	{
+		bigNbr.push_back(container[i]);
+		if (j == 0 || j % 2 == 1)
+			std::cout << RED << bigNbr[j] << " ";
+		else
+			std::cout << GREEN << bigNbr[j] << " ";
+		j++;
+	}
+	std::cout << std::endl;
+	return (bigNbr);
+}
+
+template <typename Container>
+size_t binarySearch(const Container& container, int number, size_t maxIndex)
+{
+	size_t left = 0;
+	size_t right = maxIndex + 1;
+
+	while (left < right)
+	{
+		size_t middle = left + (right - left) / 2;
+		if (container[middle] < number)
+			left = middle + 1;
+		else
+			right = middle;
+	}
+
+	return left;
+}
+
 template<typename Container>
 void PmergeMe::reversePairing(Container &container, int recursionDepth)
 {
@@ -148,36 +184,43 @@ void PmergeMe::reversePairing(Container &container, int recursionDepth)
 			inserted++;
 		}
 	}
+
+	Container bigNbr = extractBigNumbers(container, box_number, box_size);
 	int JacobSthal = 3;
-	int PrevRank = 1;
-	int Index = 3;
+	int prevRank = 1;
+	int indexJacob = 3;
+	size_t index = 4;
+
 	while (inserted < box_number)
 	{
-		if (Index == PrevRank)
+		std::cout << "-------------------------"<< std::endl;
+		Container bigInserted = extractBigNumbers(MainChain, inserted, box_size);
+		if (indexJacob == prevRank)
 		{
 			int a = JacobSthal;
-			JacobSthal = JacobSthal + PrevRank * 2;
-			PrevRank = a;
-			Index = JacobSthal;
-		} //PAS BON car l'indice decremente de 2, faire un tableau des grands uniquement ?
-		size_t numberChecked = box_size * (Index + 2) - 1;
-		numberChecked = container[numberChecked];
-		std::cout << MAGENTA << "Number checked : " << numberChecked << RESET << std::endl;
+			JacobSthal = JacobSthal + prevRank * 2;
+			prevRank = a;
+			indexJacob = JacobSthal;
+		}
+		index					= (indexJacob - 1) * 2;
+		size_t numberChecked	= bigNbr[index];
+		size_t upperBound		= bigNbr[index + 1];
+		size_t maxIndex			= bigInserted.size();
+		for (size_t i = 0; i < bigInserted.size(); i++)
+		{
+			if (bigInserted[i] == static_cast<int>(upperBound))
+				maxIndex = i;
+		}
+		size_t insertion =  binarySearch(bigInserted, numberChecked, maxIndex);
+		insertGroup(container, bigInserted, index, insertion, box_size);
 
-
-
-		// numberChecked = container[numberChecked];
-		// size_t UpperBound = box_size * (Index + 3);
-		// if (UpperBound > container.size())
-		// 	UpperBound = -1;
-		// else
-		// 	UpperBound = container[UpperBound];
-
-
-		// std::cout << GREEN << "UpperBound : " << UpperBound << RESET << std::endl;
-		// std::cout << CYAN << "Inserted : " << inserted << RESET << std::endl;
-		Index -= 2;
-		inserted++;
+					std::cout << MAGENTA << "insertion : " <<insertion << std::endl;
+					std::cout << MAGENTA << "Number checked : " << numberChecked << " " << std::endl;
+					std::cout << CYAN << "Upper Bound : " << upperBound<< RESET << std::endl;
+					std::cout << CYAN << bigNbr.size() << RESET << std::endl;
+					std::cout << CYAN << index + 1 << RESET << std::endl;
+		indexJacob	-= 1;
+		inserted	++;
 	}
 
 	this->_vector = MainChain;
