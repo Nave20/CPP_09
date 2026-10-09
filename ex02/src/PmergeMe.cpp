@@ -41,17 +41,19 @@ void PmergeMe::printContainer(bool b)
 {
 	if (b == true)
 	{
+		std::cout << RED;
 		std::vector<int>::iterator it = this->_vector.begin();
 		for (; it != this->_vector.end(); ++it)
 			std::cout << *it << " ";
-		std::cout << std::endl;
+		std::cout << RESET <<std::endl;
 	}
 	else
 	{
+		std::cout << BLUE;
 		std::deque<int>::iterator it = this->_deque.begin();
 		for (; it != this->_deque.end(); ++it)
 			std::cout << *it << " ";
-		std::cout << std::endl;
+		std::cout << RESET <<std::endl;
 	}
 	std::cout << "reclvl :" << _recLvl << std::endl;
 }
@@ -98,30 +100,14 @@ void PmergeMe::stragglerHandling(Container &container)
 {
 	if (container.size() % 2 != 0)
 	{
-		size_t i = 0;
-		for (; i < container.size(); i++);
+		size_t i = container.size() - 1;
+
 		this->_standAlone = container[i];
 		this->_odd = true;
-		container.erase(container.begin() + i - 1, container.end());
+
+		container.erase(container.begin() + i);
 	}
 }
-
-// template <typename Container>
-// void insertGroup(Container& from,
-// 				Container& to,
-// 				size_t GroupNBRfrom,
-// 				size_t GroupNBRto,
-// 				size_t groupSize)
-// {
-// 	size_t fromIndex = GroupNBRfrom * groupSize;
-// 	size_t toIndex   = GroupNBRto * groupSize;
-//
-// 	to.insert(
-// 		to.begin() + toIndex,
-// 		from.begin() + fromIndex,
-// 		from.begin() + fromIndex + groupSize
-// 	);
-// }
 
 template <typename Container>
 void insertGroup(Container& from,
@@ -133,25 +119,25 @@ void insertGroup(Container& from,
 	size_t fromIndex = GroupNBRfrom * groupSize;
 	size_t toIndex   = GroupNBRto * groupSize;
 
-	std::cout << "insertGroup:"
-			  << " fromGroup=" << GroupNBRfrom
-			  << " toGroup=" << GroupNBRto
-			  << " fromIndex=" << fromIndex
-			  << " toIndex=" << toIndex
-			  << " groupSize=" << groupSize
-			  << " from.size=" << from.size()
-			  << " to.size=" << to.size()
-			  << std::endl;
+	// std::cout << "insertGroup:"
+	// 		  << " fromGroup=" << GroupNBRfrom
+	// 		  << " toGroup=" << GroupNBRto
+	// 		  << " fromIndex=" << fromIndex
+	// 		  << " toIndex=" << toIndex
+	// 		  << " groupSize=" << groupSize
+	// 		  << " from.size=" << from.size()
+	// 		  << " to.size=" << to.size()
+	// 		  << std::endl;
 
 	if (fromIndex + groupSize > from.size())
 	{
-		std::cout << "ERREUR FROM" << std::endl;
+		std::cout << "ERROR FROM" << std::endl;
 		return;
 	}
 
 	if (toIndex > to.size())
 	{
-		std::cout << "ERREUR TO" << std::endl;
+		std::cout << "ERROR TO" << std::endl;
 		return;
 	}
 
@@ -200,15 +186,12 @@ size_t binarySearch(const Container& container, int number, size_t maxIndex)
 }
 
 template<typename Container>
-void PmergeMe::reversePairing(Container &container, int recursionDepth)
+void PmergeMe::reversePairingVector(Container &container, int recursionDepth)
 {
-	if (recursionDepth == 0)
+	if (recursionDepth < 0)
 		return;
 	size_t box_size = 1 << recursionDepth;
 	size_t box_number = container.size() / box_size;
-							std::cout
-							<< BLUE << "box size :" << box_size << std::endl
-							<< YELLOW << "box number : " << box_number << RESET << std::endl;
 	Container MainChain;
 	size_t inserted = 0;
 	for (size_t i = 0; i < box_number; i++)
@@ -229,11 +212,10 @@ void PmergeMe::reversePairing(Container &container, int recursionDepth)
 	int JacobSthal = 3;
 	int prevRank = 1;
 	int indexJacob = 3;
-	size_t index = 4;
+	size_t index;
 
 	while (inserted < box_number)
 	{
-		std::cout << "-------------------------"<< std::endl;
 		Container bigInserted = extractBigNumbers(MainChain, inserted, box_size);
 		if (indexJacob == prevRank)
 		{
@@ -242,18 +224,12 @@ void PmergeMe::reversePairing(Container &container, int recursionDepth)
 			prevRank = a;
 			indexJacob = JacobSthal;
 		}
-		index					= (indexJacob - 1) * 2;
-
-		std::cout << "index = " << index
-													<< " bigNbr.size() = " << bigNbr.size()
-													<< std::endl;
+		index = (indexJacob - 1) * 2;
+		if (index >= bigNbr.size())
+			index = bigNbr.size() - 1;
 		size_t upperBound;
 		if (index + 1 >= bigNbr.size())
-		{
 			upperBound = bigNbr[index];
-			std::cout << "ERREUR : index hors limites" << std::endl;
-			// break;
-		}
 		else
 			upperBound = bigNbr[index + 1];
 		size_t numberChecked	= bigNbr[index];
@@ -272,33 +248,122 @@ void PmergeMe::reversePairing(Container &container, int recursionDepth)
 		}
 		size_t insertion =  binarySearch(bigInserted, numberChecked, maxIndex);
 		insertGroup(container, MainChain, index, insertion, box_size);
-
-					std::cout << MAGENTA << "insertion : " <<insertion << std::endl;
-					std::cout << MAGENTA << "Number checked : " << numberChecked << " " << std::endl;
-					std::cout << CYAN << "Upper Bound : " << upperBound<< RESET << std::endl;
-					std::cout << CYAN << bigNbr.size() << RESET << std::endl;
-					std::cout << CYAN << index + 1 << RESET << std::endl;
 		indexJacob	-= 1;
 		inserted	++;
-		for (size_t i = 0; i < MainChain.size(); i++)
-		{
-			std::cout << RED << MainChain[i] << " ";
-			if (i % 4 == 3)
-				std::cout << " --- ";
-		}
-		std::cout << RESET << std::endl;
 	}
-	//AJOUTER LE RESTE DES UNUSED
+	for (size_t i = box_number * box_size; i < container.size(); i++)
+		MainChain.push_back(container[i]);
 	this->_vector = MainChain;
+	// printContainer(1);
+	reversePairingVector(this->_vector, recursionDepth - 1);
+}
+
+template<typename Container>
+void PmergeMe::reversePairingDeque(Container &container, int recursionDepth)
+{
+	if (recursionDepth < 0)
+		return;
+	size_t box_size = 1 << recursionDepth;
+	size_t box_number = container.size() / box_size;
+	Container MainChain;
+	size_t inserted = 0;
+	for (size_t i = 0; i < box_number; i++)
+	{
+		if (i == 0)
+		{
+			insertGroup(container, MainChain, i, inserted, box_size);
+			inserted++;
+		}
+		else if (i % 2 == 1)
+		{
+			insertGroup(container, MainChain, i, inserted, box_size);
+			inserted++;
+		}
+	}
+
+	Container bigNbr = extractBigNumbers(container, box_number, box_size);
+	int JacobSthal = 3;
+	int prevRank = 1;
+	int indexJacob = 3;
+	size_t index;
+
+	while (inserted < box_number)
+	{
+		Container bigInserted = extractBigNumbers(MainChain, inserted, box_size);
+		if (indexJacob == prevRank)
+		{
+			int a = JacobSthal;
+			JacobSthal = JacobSthal + prevRank * 2;
+			prevRank = a;
+			indexJacob = JacobSthal;
+		}
+		index = (indexJacob - 1) * 2;
+		if (index >= bigNbr.size())
+			index = bigNbr.size() - 1;
+		size_t upperBound;
+		if (index + 1 >= bigNbr.size())
+			upperBound = bigNbr[index];
+		else
+			upperBound = bigNbr[index + 1];
+		size_t numberChecked	= bigNbr[index];
+		size_t maxIndex;
+		if (bigInserted.empty())
+			maxIndex = 0;
+		else
+			maxIndex = bigInserted.size() - 1;
+		for (size_t i = 0; i < bigInserted.size(); i++)
+		{
+			if (bigInserted[i] == static_cast<int>(upperBound))
+			{
+				maxIndex = i;
+				break;
+			}
+		}
+		size_t insertion =  binarySearch(bigInserted, numberChecked, maxIndex);
+		insertGroup(container, MainChain, index, insertion, box_size);
+		indexJacob	-= 1;
+		inserted	++;
+	}
+	for (size_t i = box_number * box_size; i < container.size(); i++)
+		MainChain.push_back(container[i]);
+	this->_deque = MainChain;
+	// printContainer(0);
+	reversePairingDeque(this->_deque, recursionDepth - 1);
+}
+
+template <typename Container>
+void insertStraggler(Container& sorted, int straggler)
+{
+	typename Container::iterator pos = sorted.begin();
+	typename Container::iterator end = sorted.end();
+
+	while (pos < end)
+	{
+		typename Container::iterator middle = pos + (end - pos) / 2;
+
+		if (*middle < straggler)
+			pos = middle + 1;
+		else
+			end = middle;
+	}
+
+	sorted.insert(pos, straggler);
 }
 
 void PmergeMe::solve()
 {
 	stragglerHandling(this->_vector);
-	// printContainer(1);
 	createPairs(this->_vector, 1);
+	reversePairingVector(this->_vector, this->_recLvl - 1);
+	if (this->_odd == true)
+		insertStraggler(this->_vector, this->_standAlone);
+	this->_recLvl = 0;
+	createPairs(this->_deque, 1);
+	reversePairingDeque(this->_deque, this->_recLvl - 1);
+
+	// if (this->_odd == true)
+	// 	insertStraggler(this->_deque, this->_standAlone);
+
 	printContainer(1);
-	reversePairing(this->_vector, this->_recLvl - 2);
-	printContainer(1);
-	// printContainer(1);
+	// printContainer(0);
 }

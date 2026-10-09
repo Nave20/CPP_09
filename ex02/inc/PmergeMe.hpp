@@ -100,7 +100,9 @@ class PmergeMe
 		// template <typename Container>
 		// void mainChain(Container &container);
 		template <typename Container>
-		void reversePairing(Container &container, int);
+		void reversePairingVector(Container &container, int);
+		template <typename Container>
+		void reversePairingDeque(Container &container, int);
 
 	private:
 		std::vector<int> _vector;
