@@ -67,9 +67,16 @@
 #define BG_BRIGHT_MAGENTA "\033[105m"
 #define BG_BRIGHT_CYAN    "\033[106m"
 #define BG_BRIGHT_WHITE   "\033[107m"
+
 #include <deque>
 #include <string>
 #include <vector>
+#include <sys/time.h>
+#include <algorithm>
+#include <sstream>
+#include <climits>
+#include <iomanip>
+#include <iostream>
 
 struct Pair
 {
@@ -101,6 +108,7 @@ class PmergeMe
 		template <typename Container>
 		void reversePairingDeque(Container &container, int);
 
+		void printResult();
 	private:
 		std::vector<int> _vector;
 		std::deque<int> _deque;

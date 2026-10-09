@@ -12,11 +12,6 @@
 
 #include "../inc/PmergeMe.hpp"
 
-#include <algorithm>
-#include <sstream>
-#include <climits>
-#include <iostream>
-
 PmergeMe::PmergeMe() : _standAlone(0), _odd(false), _recLvl(0) {}
 
 PmergeMe::~PmergeMe() {}
@@ -400,25 +395,50 @@ void validate(Container input, Container result)
 	std::cout << "--------------" << RESET << std::endl;
 }
 
+double getTimeInMicroseconds()
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+
+	return static_cast<double>(tv.tv_sec) * 1000000.0
+		 + static_cast<double>(tv.tv_usec);
+}
+
+void	PmergeMe::printResult()
+{
+	std::cout << "Before : ";
+	printContainer(0);
+	std::cout << std::endl;
+	std::cout << "After : ";
+	printContainer(1);
+}
+
 void PmergeMe::solve()
 {
 	std::vector<int> container = this->_vector;
 	std::deque<int> container2 = this->_deque;
+	double time = getTimeInMicroseconds();
 
 	stragglerHandling(this->_vector);
 	createPairs(this->_vector, 1);
 	reversePairingVector(this->_vector, this->_recLvl - 1);
 	if (this->_odd == true)
 		insertStraggler(this->_vector, this->_standAlone);
+	printResult();
+	time = getTimeInMicroseconds() - time;
+	std::cout << std::endl;
+	std::cout << "Time to process a range of " YELLOW << this->_vector.size() << RESET " elements with std::vector<int> : " CYAN << time << RESET " us"<< std::endl;
 
 	this->_recLvl = 0;
+
+	time = getTimeInMicroseconds();
 	createPairs(this->_deque, 1);
 	reversePairingDeque(this->_deque, this->_recLvl - 1);
+	time = getTimeInMicroseconds() - time;
+	std::cout << "Time to process a range of " YELLOW << this->_deque.size() << RESET " elements with std::deque<int> : " CYAN << time << RESET " us"<< std::endl;
 
-
-	printContainer(1);
-	printContainer(0);
-
+	std::cout << std::endl;
 	validate(container, this->_vector);
+	std::cout << std::endl;
 	validate(container2, this->_deque);
 }
