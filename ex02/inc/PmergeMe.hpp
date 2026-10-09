@@ -88,9 +88,6 @@ class PmergeMe
 
 		std::vector<int> getVector() {return (_vector);};
 		std::deque<int> getDeque() {return (_deque);};
-		template <typename Container>
-		std::vector<Pair> makePairsV(const Container& container);
-		// void printPairs(std::vector<Pair> pairs);
 
 		void solve();
 		template <typename Container>

@@ -55,7 +55,7 @@ void PmergeMe::printContainer(bool b)
 			std::cout << *it << " ";
 		std::cout << RESET <<std::endl;
 	}
-	std::cout << "reclvl :" << _recLvl << std::endl;
+	// std::cout << CYAN << "reclvl :" << _recLvl << RESET << std::endl;
 }
 
 template <typename Container>
@@ -111,10 +111,10 @@ void PmergeMe::stragglerHandling(Container &container)
 
 template <typename Container>
 void insertGroup(Container& from,
-				 Container& to,
-				 size_t GroupNBRfrom,
-				 size_t GroupNBRto,
-				 size_t groupSize)
+				Container& to,
+				size_t GroupNBRfrom,
+				size_t GroupNBRto,
+				size_t groupSize)
 {
 	size_t fromIndex = GroupNBRfrom * groupSize;
 	size_t toIndex   = GroupNBRto * groupSize;
@@ -131,13 +131,13 @@ void insertGroup(Container& from,
 
 	if (fromIndex + groupSize > from.size())
 	{
-		std::cout << "ERROR FROM" << std::endl;
+		// std::cout << "ERROR FROM" << std::endl;
 		return;
 	}
 
 	if (toIndex > to.size())
 	{
-		std::cout << "ERROR TO" << std::endl;
+		// std::cout << "ERROR TO" << std::endl;
 		return;
 	}
 
@@ -207,54 +207,64 @@ void PmergeMe::reversePairingVector(Container &container, int recursionDepth)
 			inserted++;
 		}
 	}
-
 	Container bigNbr = extractBigNumbers(container, box_number, box_size);
-	int JacobSthal = 3;
-	int prevRank = 1;
-	int indexJacob = 3;
-	size_t index;
-
-	while (inserted < box_number)
+	size_t maxRank = (box_number + 1) / 2;
+	size_t previous = 1;
+	size_t previousJacob = 1;
+	size_t jacob = 3;
+	while (previous < maxRank)
 	{
-		Container bigInserted = extractBigNumbers(MainChain, inserted, box_size);
-		if (indexJacob == prevRank)
-		{
-			int a = JacobSthal;
-			JacobSthal = JacobSthal + prevRank * 2;
-			prevRank = a;
-			indexJacob = JacobSthal;
-		}
-		index = (indexJacob - 1) * 2;
-		if (index >= bigNbr.size())
-			index = bigNbr.size() - 1;
-		size_t upperBound;
-		if (index + 1 >= bigNbr.size())
-			upperBound = bigNbr[index];
-		else
-			upperBound = bigNbr[index + 1];
-		size_t numberChecked	= bigNbr[index];
-		size_t maxIndex;
-		if (bigInserted.empty())
-			maxIndex = 0;
-		else
-			maxIndex = bigInserted.size() - 1;
-		for (size_t i = 0; i < bigInserted.size(); i++)
-		{
-			if (bigInserted[i] == static_cast<int>(upperBound))
-			{
-				maxIndex = i;
-				break;
-			}
-		}
-		size_t insertion =  binarySearch(bigInserted, numberChecked, maxIndex);
-		insertGroup(container, MainChain, index, insertion, box_size);
-		indexJacob	-= 1;
-		inserted	++;
+	    size_t high = jacob;
+	    if (high > maxRank)
+	        high = maxRank;
+	    size_t low = previous + 1;
+	    size_t rank = high;
+
+	    while (rank >= low)
+	    {
+	        size_t index = 2 * (rank - 1);
+	        Container bigInserted =
+	            extractBigNumbers(MainChain, inserted, box_size);
+	        if (index >= bigNbr.size())
+	            return;
+
+	        size_t numberChecked = bigNbr[index];
+	        size_t upperBound = 0;
+	        bool hasPartner = (index + 1 < box_number);
+	        if (hasPartner)
+	            upperBound = bigNbr[index + 1];
+	        size_t maxIndex = bigInserted.size();
+	        if (hasPartner)
+	        {
+	            bool found = false;
+
+	            for (size_t i = 0; i < bigInserted.size(); ++i)
+	            {
+	                if (bigInserted[i] == static_cast<int>(upperBound))
+	                {
+	                    maxIndex = i;
+	                    found = true;
+	                    break;
+	                }
+	            }
+	            if (!found)
+	                return;
+	        }
+	        size_t insertion = binarySearch(bigInserted, numberChecked, maxIndex);
+	        insertGroup(container, MainChain, index, insertion, box_size);
+	        ++inserted;
+	        if (rank == low)
+	            break;
+	        --rank;
+	    }
+	    previous = high;
+	    size_t nextJacob = jacob + 2 * previousJacob;
+	    previousJacob = jacob;
+	    jacob = nextJacob;
 	}
 	for (size_t i = box_number * box_size; i < container.size(); i++)
 		MainChain.push_back(container[i]);
 	this->_vector = MainChain;
-	// printContainer(1);
 	reversePairingVector(this->_vector, recursionDepth - 1);
 }
 
@@ -280,54 +290,64 @@ void PmergeMe::reversePairingDeque(Container &container, int recursionDepth)
 			inserted++;
 		}
 	}
-
 	Container bigNbr = extractBigNumbers(container, box_number, box_size);
-	int JacobSthal = 3;
-	int prevRank = 1;
-	int indexJacob = 3;
-	size_t index;
-
-	while (inserted < box_number)
+	size_t maxRank = (box_number + 1) / 2;
+	size_t previous = 1;
+	size_t previousJacob = 1;
+	size_t jacob = 3;
+	while (previous < maxRank)
 	{
-		Container bigInserted = extractBigNumbers(MainChain, inserted, box_size);
-		if (indexJacob == prevRank)
-		{
-			int a = JacobSthal;
-			JacobSthal = JacobSthal + prevRank * 2;
-			prevRank = a;
-			indexJacob = JacobSthal;
-		}
-		index = (indexJacob - 1) * 2;
-		if (index >= bigNbr.size())
-			index = bigNbr.size() - 1;
-		size_t upperBound;
-		if (index + 1 >= bigNbr.size())
-			upperBound = bigNbr[index];
-		else
-			upperBound = bigNbr[index + 1];
-		size_t numberChecked	= bigNbr[index];
-		size_t maxIndex;
-		if (bigInserted.empty())
-			maxIndex = 0;
-		else
-			maxIndex = bigInserted.size() - 1;
-		for (size_t i = 0; i < bigInserted.size(); i++)
-		{
-			if (bigInserted[i] == static_cast<int>(upperBound))
-			{
-				maxIndex = i;
-				break;
-			}
-		}
-		size_t insertion =  binarySearch(bigInserted, numberChecked, maxIndex);
-		insertGroup(container, MainChain, index, insertion, box_size);
-		indexJacob	-= 1;
-		inserted	++;
+	    size_t high = jacob;
+	    if (high > maxRank)
+	        high = maxRank;
+	    size_t low = previous + 1;
+	    size_t rank = high;
+
+	    while (rank >= low)
+	    {
+	        size_t index = 2 * (rank - 1);
+	        Container bigInserted =
+	            extractBigNumbers(MainChain, inserted, box_size);
+	        if (index >= bigNbr.size())
+	            return;
+
+	        size_t numberChecked = bigNbr[index];
+	        size_t upperBound = 0;
+	        bool hasPartner = (index + 1 < box_number);
+	        if (hasPartner)
+	            upperBound = bigNbr[index + 1];
+	        size_t maxIndex = bigInserted.size();
+	        if (hasPartner)
+	        {
+	            bool found = false;
+
+	            for (size_t i = 0; i < bigInserted.size(); ++i)
+	            {
+	                if (bigInserted[i] == static_cast<int>(upperBound))
+	                {
+	                    maxIndex = i;
+	                    found = true;
+	                    break;
+	                }
+	            }
+	            if (!found)
+	                return;
+	        }
+	        size_t insertion = binarySearch(bigInserted, numberChecked, maxIndex);
+	        insertGroup(container, MainChain, index, insertion, box_size);
+	        ++inserted;
+	        if (rank == low)
+	            break;
+	        --rank;
+	    }
+	    previous = high;
+	    size_t nextJacob = jacob + 2 * previousJacob;
+	    previousJacob = jacob;
+	    jacob = nextJacob;
 	}
 	for (size_t i = box_number * box_size; i < container.size(); i++)
 		MainChain.push_back(container[i]);
 	this->_deque = MainChain;
-	// printContainer(0);
 	reversePairingDeque(this->_deque, recursionDepth - 1);
 }
 
@@ -350,20 +370,55 @@ void insertStraggler(Container& sorted, int straggler)
 	sorted.insert(pos, straggler);
 }
 
+template <typename Container>
+void validate(Container input, Container result)
+{
+	bool sorted = true;
+	for (size_t i = 1; i < result.size(); ++i)
+	{
+		if (result[i - 1] > result[i])
+		{
+			sorted = false;
+			break;
+		}
+	}
+	bool sameSize = (result.size() == input.size());
+
+	Container expected = input;
+	Container actual = result;
+
+	std::sort(expected.begin(), expected.end());
+	std::sort(actual.begin(), actual.end());
+
+	bool sameValues = (expected == actual);
+
+	std::cout << GREEN << "--------------" << std::endl;
+	std::cout << "Sorted : " << (sorted ? "OK" : "Failure") << std::endl;
+	std::cout << "Size : " << (sameSize ? "OK" : "Failure") << std::endl;
+	std::cout << "Value validation : "
+			  << (sameValues ? "OK" : "Failure") << std::endl;
+	std::cout << "--------------" << RESET << std::endl;
+}
+
 void PmergeMe::solve()
 {
+	std::vector<int> container = this->_vector;
+	std::deque<int> container2 = this->_deque;
+
 	stragglerHandling(this->_vector);
 	createPairs(this->_vector, 1);
 	reversePairingVector(this->_vector, this->_recLvl - 1);
 	if (this->_odd == true)
 		insertStraggler(this->_vector, this->_standAlone);
+
 	this->_recLvl = 0;
 	createPairs(this->_deque, 1);
 	reversePairingDeque(this->_deque, this->_recLvl - 1);
 
-	// if (this->_odd == true)
-	// 	insertStraggler(this->_deque, this->_standAlone);
 
 	printContainer(1);
-	// printContainer(0);
+	printContainer(0);
+
+	validate(container, this->_vector);
+	validate(container2, this->_deque);
 }
